@@ -21,6 +21,12 @@
         <button class="nav-item" data-view="people">♙ <span>Pessoas importantes</span></button>
         <button class="nav-item" data-view="notes">✎ <span>Anotações</span></button>
       </nav>
+      <div class="sidebar-tools">
+        <p>Seus dados</p>
+        <button class="tool-btn" id="exportData">⇩ Fazer backup</button>
+        <button class="tool-btn" id="importData">⇧ Restaurar backup</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+      </div>
       <div class="sidebar-footer"><span>Seu espaço pessoal</span><small>Os dados ficam salvos neste dispositivo.</small></div>
     </aside>
 
@@ -49,6 +55,13 @@
 
       <section id="agenda" class="view">
         <div class="section-head"><div><h2>Agenda</h2><p>Organize seus compromissos importantes.</p></div><button class="primary add-btn" data-add="event">＋ Novo compromisso</button></div>
+        <section class="calendar-panel">
+          <div class="calendar-head"><button class="calendar-nav" id="prevMonth" aria-label="Mês anterior">‹</button><h3 id="calendarTitle"></h3><button class="calendar-nav" id="nextMonth" aria-label="Próximo mês">›</button></div>
+          <div class="weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+          <p class="calendar-help">Clique em um dia para adicionar um compromisso nessa data.</p>
+        </section>
+        <div class="list-section-title"><h3>Compromissos cadastrados</h3></div>
         <div id="eventList" class="cards-list"></div>
       </section>
 
