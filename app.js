@@ -16,14 +16,14 @@ function itemKey(type){return({event:'events',task:'tasks',person:'people',note:
 function setView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===name));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-  document.getElementById('pageTitle').textContent=({dashboard:'Dashboard',agenda:'Agenda',tasks:'Tarefas',people:'Pessoas importantes',notes:'Anotações'})[name];
+  const pageTitle=document.getElementById('pageTitle');if(pageTitle)pageTitle.textContent=({dashboard:'Dashboard',agenda:'Agenda',tasks:'Tarefas',people:'Pessoas importantes',notes:'Anotações'})[name];
   if(name==='agenda')renderCalendar();
 }
 function render(){
   const today=new Date();
   document.getElementById('todayLabel').textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(today);
-  document.getElementById('heroDate').textContent=new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'short'}).format(today);
-  document.getElementById('greeting').textContent=today.getHours()<12?'Bom dia!':today.getHours()<18?'Boa tarde!':'Boa noite!';
+  const heroDate=document.getElementById('heroDate');if(heroDate)heroDate.textContent=new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'short'}).format(today);
+  const greeting=document.getElementById('greeting');if(greeting)greeting.textContent='Olá, Roberta';
   document.getElementById('statEvents').textContent=state.events.length;
   document.getElementById('statTasks').textContent=state.tasks.filter(t=>!t.done).length;
   document.getElementById('statPeople').textContent=state.people.length;
