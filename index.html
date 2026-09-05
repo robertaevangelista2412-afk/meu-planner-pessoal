@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17376f" />
   <title>Meu Planner Pessoal</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -11,12 +12,8 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">MP</div>
-        <div>
-          <strong>Meu Planner</strong>
-          <span>Organize sua vida</span>
-        </div>
+        <div><strong>Meu Planner</strong><span>Organize sua vida</span></div>
       </div>
-
       <nav class="nav">
         <button class="nav-item active" data-view="dashboard">⌂ <span>Dashboard</span></button>
         <button class="nav-item" data-view="agenda">◷ <span>Agenda</span></button>
@@ -24,98 +21,58 @@
         <button class="nav-item" data-view="people">♙ <span>Pessoas importantes</span></button>
         <button class="nav-item" data-view="notes">✎ <span>Anotações</span></button>
       </nav>
-
-      <div class="sidebar-footer">
-        <span>Seu espaço pessoal</span>
-        <small>Os dados ficam salvos neste dispositivo.</small>
-      </div>
+      <div class="sidebar-footer"><span>Seu espaço pessoal</span><small>Os dados ficam salvos neste dispositivo.</small></div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <p class="eyebrow" id="todayLabel"></p>
-          <h1 id="pageTitle">Dashboard</h1>
-        </div>
-        <button class="primary" id="quickAdd">＋ Adicionar</button>
+        <div><p class="eyebrow" id="todayLabel"></p><h1 id="pageTitle">Dashboard</h1></div>
+        <button class="primary" id="quickAdd">＋ Adicionar tarefa</button>
       </header>
 
       <section id="dashboard" class="view active">
         <div class="hero-card">
-          <div>
-            <p class="eyebrow">MEU DIA</p>
-            <h2 id="greeting">Olá!</h2>
-            <p>Um lugar só para organizar sua vida, seus compromissos, suas tarefas e o que é importante para você.</p>
-          </div>
+          <div><p class="eyebrow">MEU DIA</p><h2 id="greeting">Olá!</h2><p>Um lugar só para organizar sua vida, seus compromissos, suas tarefas e o que é importante para você.</p></div>
           <div class="hero-date" id="heroDate"></div>
         </div>
-
         <div class="stats-grid">
           <article class="stat-card"><span>📅</span><div><strong id="statEvents">0</strong><small>Compromissos</small></div></article>
           <article class="stat-card"><span>✓</span><div><strong id="statTasks">0</strong><small>Tarefas pendentes</small></div></article>
           <article class="stat-card"><span>★</span><div><strong id="statPeople">0</strong><small>Pessoas importantes</small></div></article>
           <article class="stat-card"><span>✎</span><div><strong id="statNotes">0</strong><small>Anotações</small></div></article>
         </div>
-
         <div class="dashboard-grid">
-          <section class="panel">
-            <div class="panel-head"><h3>Próximos compromissos</h3><button class="link-btn" data-go="agenda">Ver agenda</button></div>
-            <div id="upcomingEvents" class="list-empty">Nenhum compromisso cadastrado.</div>
-          </section>
-          <section class="panel">
-            <div class="panel-head"><h3>Minhas tarefas</h3><button class="link-btn" data-go="tasks">Ver tarefas</button></div>
-            <div id="upcomingTasks" class="list-empty">Nenhuma tarefa cadastrada.</div>
-          </section>
+          <section class="panel"><div class="panel-head"><h3>Próximos compromissos</h3><button class="link-btn" data-go="agenda">Ver agenda</button></div><div id="upcomingEvents" class="list-empty"></div></section>
+          <section class="panel"><div class="panel-head"><h3>Minhas tarefas</h3><button class="link-btn" data-go="tasks">Ver tarefas</button></div><div id="upcomingTasks" class="list-empty"></div></section>
         </div>
       </section>
 
       <section id="agenda" class="view">
-        <div class="section-head">
-          <div><h2>Agenda</h2><p>Organize seus compromissos e compromissos importantes.</p></div>
-          <button class="primary add-btn" data-add="event">＋ Novo compromisso</button>
-        </div>
+        <div class="section-head"><div><h2>Agenda</h2><p>Organize seus compromissos importantes.</p></div><button class="primary add-btn" data-add="event">＋ Novo compromisso</button></div>
         <div id="eventList" class="cards-list"></div>
       </section>
 
       <section id="tasks" class="view">
-        <div class="section-head">
-          <div><h2>Tarefas</h2><p>Registre e acompanhe tudo o que precisa ser feito.</p></div>
-          <button class="primary add-btn" data-add="task">＋ Nova tarefa</button>
-        </div>
-        <div class="filter-row">
-          <button class="filter active" data-filter="all">Todas</button>
-          <button class="filter" data-filter="open">Pendentes</button>
-          <button class="filter" data-filter="done">Concluídas</button>
-        </div>
+        <div class="section-head"><div><h2>Tarefas</h2><p>Registre e acompanhe tudo o que precisa ser feito.</p></div><button class="primary add-btn" data-add="task">＋ Nova tarefa</button></div>
+        <div class="filter-row"><button class="filter active" data-filter="all">Todas</button><button class="filter" data-filter="open">Pendentes</button><button class="filter" data-filter="done">Concluídas</button></div>
         <div id="taskList" class="cards-list"></div>
       </section>
 
       <section id="people" class="view">
-        <div class="section-head">
-          <div><h2>Pessoas importantes</h2><p>Guarde informações e detalhes que você não quer esquecer.</p></div>
-          <button class="primary add-btn" data-add="person">＋ Adicionar pessoa</button>
-        </div>
+        <div class="section-head"><div><h2>Pessoas importantes</h2><p>Guarde informações e detalhes que você não quer esquecer.</p></div><button class="primary add-btn" data-add="person">＋ Adicionar pessoa</button></div>
         <div id="peopleList" class="people-grid"></div>
       </section>
 
       <section id="notes" class="view">
-        <div class="section-head">
-          <div><h2>Anotações</h2><p>Ideias, lembretes e tudo o que quiser registrar.</p></div>
-          <button class="primary add-btn" data-add="note">＋ Nova anotação</button>
-        </div>
+        <div class="section-head"><div><h2>Anotações</h2><p>Ideias, lembretes e tudo o que quiser registrar.</p></div><button class="primary add-btn" data-add="note">＋ Nova anotação</button></div>
         <div id="notesList" class="notes-grid"></div>
       </section>
     </main>
   </div>
 
   <div id="modal" class="modal hidden">
-    <div class="modal-card">
-      <button class="modal-close" id="closeModal">×</button>
-      <h2 id="modalTitle">Adicionar</h2>
-      <form id="entryForm"></form>
-    </div>
+    <div class="modal-card"><button class="modal-close" id="closeModal">×</button><h2 id="modalTitle">Adicionar</h2><form id="entryForm"></form></div>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
