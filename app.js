@@ -31,7 +31,7 @@ function render(){
   const upcoming=[...state.events].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
   document.getElementById('upcomingEvents').innerHTML=upcoming.length?upcoming.map(eventCard).join(''):empty('Nenhum compromisso cadastrado.');
   const openTasks=[...state.tasks].filter(t=>!t.done).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,5);
-  document.getElementById('upcomingTasks').innerHTML=openTasks.length?openTasks.map(taskCard).join(''):empty('Nenhuma tarefa pendente.');
+  document.getElementById('upcomingTasks').innerHTML=openTasks.length?openTasks.map(taskCard).join(''):'<div class="empty-illustration">♡<p>Você não tem tarefas pendentes!</p><small>Que tal aproveitar para planejar seu dia? ✨</small></div>';
   document.getElementById('eventList').innerHTML=state.events.length?[...state.events].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).map(eventCard).join(''):empty('Ainda não há compromissos. Clique em “Novo compromisso” para começar.');
   const filtered=state.tasks.filter(t=>taskFilter==='all'||(taskFilter==='open'&&!t.done)||(taskFilter==='done'&&t.done));
   document.getElementById('taskList').innerHTML=filtered.length?filtered.map(taskCard).join(''):empty('Nenhuma tarefa nesta categoria.');
