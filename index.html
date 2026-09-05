@@ -1,59 +1,17 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f3c7cf" />
-  <title>Meu Planner Pessoal</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand"><span>Meu Planner</span><em>♥</em><strong>Pessoal</strong></div>
-      <nav class="nav">
-        <button class="nav-item active" data-view="dashboard">⌂ <span>Início</span></button>
-        <button class="nav-item" data-view="agenda">▣ <span>Minha Semana</span></button>
-        <button class="nav-item" data-view="tasks">📌 <span>Tarefas</span></button>
-        <button class="nav-item" data-view="tasks">◎ <span>Metas</span></button>
-        <button class="nav-item" data-view="agenda">💰 <span>Financeiro</span></button>
-        <button class="nav-item" data-view="people">🎂 <span>Aniversários</span></button>
-        <button class="nav-item" data-view="notes">✚ <span>Saúde e Bem-estar</span></button>
-        <button class="nav-item" data-view="notes">▤ <span>Notas</span></button>
-        <button class="nav-item" data-view="notes">▭ <span>Lista de Desejos</span></button>
-        <button class="nav-item" data-view="agenda">✈ <span>Viagens</span></button>
-        <button class="nav-item" data-view="people">♥ <span>Vida Pessoal</span></button>
-        <button class="nav-item" data-view="notes">⚙ <span>Configurações</span></button>
-      </nav>
-      <div class="quote">Disciplina<br>também é<br>um ato de amor<br>próprio! ♥</div>
-      <div class="sidebar-flower">🌸</div>
-    </aside>
-    <main class="main">
-      <header class="topbar"><div class="mini-icons">🌷 &nbsp; 📒 &nbsp; 🎯 &nbsp; 📌 &nbsp; 💌</div><div class="top-actions"><span>⌕</span><span>♧</span><b>R</b></div></header>
-      <section id="dashboard" class="view active">
-        <div class="welcome-row"><div><h1>Olá, Roberta <span>🌷</span></h1><p>Organize seu dia, suas prioridades e seus planos em um só lugar.</p></div><div class="today"><span>▣</span><span id="todayLabel"></span></div></div>
-        <div class="stats-grid">
-          <article class="stat-card"><span class="stat-icon">▣</span><div><small>COMPROMISSOS HOJE</small><strong id="statEvents">0</strong><p>Veja sua agenda</p></div></article>
-          <article class="stat-card"><span class="stat-icon">☑</span><div><small>TAREFAS PENDENTES</small><strong id="statTasks">0</strong><p>Organize suas prioridades</p></div></article>
-          <article class="stat-card"><span class="stat-icon">▭</span><div><small>PRÓXIMOS VENCIMENTOS</small><strong id="statNotes">0</strong><p>Financeiro pessoal</p></div></article>
-          <article class="stat-card"><span class="stat-icon">◎</span><div><small>METAS EM ANDAMENTO</small><strong id="statPeople">0</strong><p>Seus objetivos</p></div></article>
-        </div>
-        <div class="dashboard-grid">
-          <section class="panel week-panel"><div class="panel-head"><h3>▣ &nbsp; Minha Semana</h3><button class="link-btn" data-go="agenda">Ver agenda completa →</button></div><div id="upcomingEvents" class="week-list"></div></section>
-          <div class="right-panels">
-            <section class="panel soft-panel"><div class="panel-head"><h3>📌 &nbsp; Tarefas Pendentes</h3><button class="link-btn" data-go="tasks">Ver todas →</button></div><div id="upcomingTasks" class="empty-illustration">♡<p>Você não tem tarefas pendentes!</p><small>Que tal aproveitar para planejar seu dia? ✨</small></div></section>
-            <section class="panel soft-panel"><div class="panel-head"><h3>▣ &nbsp; Próximos 7 dias</h3><button class="link-btn" data-go="agenda">Ver todos →</button></div><div class="empty-illustration">♡<p>Nenhum compromisso nos próximos 7 dias.</p><small>Quando tiver, eles aparecerão aqui.</small></div></section>
-          </div>
-        </div>
-        <div class="handwritten top-quote">Sonhe<br>Planeje<br>Conquiste ♥</div><div class="handwritten bottom-quote">Tudo<br>no seu tempo ♥</div>
-      </section>
-      <section id="agenda" class="view"><div class="section-head"><div><h2>Minha Semana</h2><p>Organize seus compromissos importantes.</p></div><button class="primary add-btn" data-add="event">＋ Novo compromisso</button></div><section class="calendar-panel"><div class="calendar-head"><button class="calendar-nav" id="prevMonth">‹</button><h3 id="calendarTitle"></h3><button class="calendar-nav" id="nextMonth">›</button></div><div class="weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div id="calendarGrid" class="calendar-grid"></div><p class="calendar-help">Clique em um dia para adicionar um compromisso nessa data.</p></section><div class="list-section-title"><h3>Compromissos cadastrados</h3></div><div id="eventList" class="cards-list"></div></section>
-      <section id="tasks" class="view"><div class="section-head"><div><h2>Tarefas</h2><p>Registre e acompanhe tudo o que precisa ser feito.</p></div><button class="primary add-btn" data-add="task">＋ Nova tarefa</button></div><div class="filter-row"><button class="filter active" data-filter="all">Todas</button><button class="filter" data-filter="open">Pendentes</button><button class="filter" data-filter="done">Concluídas</button></div><div id="taskList" class="cards-list"></div></section>
-      <section id="people" class="view"><div class="section-head"><div><h2>Pessoas importantes</h2><p>Guarde informações e detalhes que você não quer esquecer.</p></div><button class="primary add-btn" data-add="person">＋ Adicionar pessoa</button></div><div id="peopleList" class="people-grid"></div></section>
-      <section id="notes" class="view"><div class="section-head"><div><h2>Anotações</h2><p>Ideias, lembretes e tudo o que quiser registrar.</p></div><button class="primary add-btn" data-add="note">＋ Nova anotação</button></div><div id="notesList" class="notes-grid"></div></section>
-    </main>
-  </div>
-  <div id="modal" class="modal hidden"><div class="modal-card"><button class="modal-close" id="closeModal">×</button><h2 id="modalTitle">Adicionar</h2><form id="entryForm"></form></div></div>
-  <script src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3c7cf"><title>Meu Planner Pessoal</title><link rel="stylesheet" href="styles.css"></head><body><div class="app-shell">
+<aside class="sidebar"><div class="brand">Meu Planner <span>Pessoal</span><i>🌸</i></div><nav class="nav">
+<button class="nav-item active" data-view="dashboard">🏠<span>Início</span></button><button class="nav-item" data-view="agenda">📅<span>Minha Semana</span></button><button class="nav-item" data-view="tasks">📝<span>Tarefas</span></button><button class="nav-item" data-view="tasks">📌<span>Metas</span></button><button class="nav-item" data-view="notes">🎯<span>Objetivos</span></button><button class="nav-item" data-view="financeiro">💰<span>Financeiro pessoal</span></button><button class="nav-item" data-view="people">🎂<span>Datas importantes</span></button><button class="nav-item" data-view="casa">🏠<span>Minha Casa</span></button><button class="nav-item" data-view="viagens">✈️<span>Viagens</span></button><button class="nav-item" data-view="estudos">📚<span>Estudos</span></button></nav><div class="quote">Organize com carinho,<br>viva com leveza. ♥</div></aside>
+<main class="main"><header class="topbar"><div class="mini-icons">🌷　📅　📝　📌　🎯</div><div class="top-actions"><span id="todayLabel"></span><b>R</b></div></header>
+<section id="dashboard" class="view active"><div class="welcome"><h1>Olá, Roberta <span>🌷</span></h1><p>Organize seu dia, suas prioridades e seus planos em um só lugar.</p></div><div class="dashboard-grid">
+<section class="panel wide"><div class="panel-head"><h2>📆 Minha Semana</h2><button class="link-btn" data-go="agenda">Ver agenda completa →</button></div><div id="upcomingEvents" class="week-list"></div></section>
+<section class="panel"><div class="panel-head"><h2>📅 Agenda de Hoje</h2><span class="tag">Hoje</span></div><div id="todayEvents" class="empty-text">Nenhum compromisso cadastrado para hoje.</div></section>
+<section class="panel clickable" id="priorityCard"><div class="panel-head"><h2>⭐ Prioridade do Dia</h2></div><div id="priorityText" class="priority">Clique aqui e escreva a coisa mais importante do seu dia.</div></section>
+<section class="panel clickable" id="quoteCard"><div class="panel-head"><h2>💭 Frase do Dia</h2></div><div id="quoteText" class="phrase">“Pequenos passos todos os dias também levam a grandes conquistas.”</div></section>
+<section class="panel"><div class="panel-head"><h2>🎂 Próximos Aniversários</h2><button class="tag" data-go="people">Pessoas importantes</button></div><div id="birthdayList" class="empty-text">Cadastre pessoas em Datas Importantes.</div></section>
+</div></section>
+<section id="agenda" class="view"><div class="section-head"><div><h1>📅 Minha Semana</h1><p>Organize seus compromissos importantes.</p></div><button class="primary" data-add="event">＋ Novo compromisso</button></div><section class="calendar-panel"><div class="calendar-head"><button id="prevMonth">‹</button><h2 id="calendarTitle"></h2><button id="nextMonth">›</button></div><div class="weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div id="calendarGrid" class="calendar-grid"></div></section><div id="eventList" class="cards-list"></div></section>
+<section id="tasks" class="view"><div class="section-head"><div><h1>📝 Tarefas e Metas</h1><p>Registre o que precisa ser feito e seus objetivos.</p></div><button class="primary" data-add="task">＋ Nova tarefa</button></div><div id="taskList" class="cards-list"></div></section>
+<section id="people" class="view"><div class="section-head"><div><h1>🎂 Datas Importantes</h1><p>Cadastre aniversários e pessoas especiais.</p></div><button class="primary" data-add="person">＋ Adicionar pessoa</button></div><div id="peopleList" class="people-grid"></div></section>
+<section id="notes" class="view"><div class="section-head"><div><h1>📝 Anotações</h1><p>Ideias, lembretes e tudo o que quiser guardar.</p></div><button class="primary" data-add="note">＋ Nova anotação</button></div><div id="notesList" class="notes-grid"></div></section>
+<section id="financeiro" class="view"><div class="simple-page"><h1>💰 Financeiro Pessoal</h1><p>Seu espaço para organizar a vida financeira.</p></div></section><section id="casa" class="view"><div class="simple-page"><h1>🏠 Minha Casa</h1><p>Organização, projetos e lembretes da casa.</p></div></section><section id="viagens" class="view"><div class="simple-page"><h1>✈️ Viagens</h1><p>Planeje seus próximos destinos.</p></div></section><section id="estudos" class="view"><div class="simple-page"><h1>📚 Estudos</h1><p>Organize seus estudos e aprendizados.</p></div></section>
+</main></div><div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="close">×</button><h2 id="modalTitle"></h2><form id="entryForm"></form></div></div><script src="app.js"></script></body></html>
