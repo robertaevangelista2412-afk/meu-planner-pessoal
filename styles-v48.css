@@ -76,3 +76,7 @@
 /* Correção visual definitiva da Agenda: TODOS os dias recebem exatamente o mesmo rosinha claro do dia atual. */
 .calendar-grid .calendar-day{background-color:#fff4f6!important;background:#fff4f6!important;}
 .calendar-grid .calendar-day.today{background-color:#fff4f6!important;background:#fff4f6!important;border-color:#c797a5!important;}
+
+
+/* Datas Importantes organizadas por mês: apenas apresentação, sem alterar os cadastros. */
+#peopleList{display:block}.people-month-group{margin:0 0 28px}.people-month-title{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:#fff0f3;color:#765e68;font-size:18px}
