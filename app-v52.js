@@ -10,7 +10,27 @@ function hasLocalData(){return keys.some(k=>state[k].length)||!!state.priority||
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));cloudDirty=true;render();queueCloudSave()}
 function queueCloudSave(){if(!cloudLoaded||!currentUser||!client)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>pushCloud(),350)}
 async function pushCloud(){if(!cloudLoaded||!currentUser||!client)return;const snapshot=JSON.parse(JSON.stringify(state));setSyncStatus('☁️ Salvando...');cloudSavePromise=client.from('planner_app_state').upsert({user_id:currentUser.id,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});const {error}=await cloudSavePromise;cloudSavePromise=null;if(error){console.error(error);setSyncStatus('⚠️ Não foi possível sincronizar agora')}else{cloudDirty=false;setSyncStatus('☁️ Sincronizado')}}
-async function pullCloud(){if(!currentUser||!client||cloudDirty||cloudSavePromise)return;const {data,error}=await client.from('planner_app_state').select('data').eq('user_id',currentUser.id).maybeSingle();if(error){console.error(error);setSyncStatus('⚠️ Erro ao carregar');return}if(data&&data.data){state={...empty,...data.data};keys.forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});localStorage.setItem(STORAGE,JSON.stringify(state));render();setSyncStatus('☁️ Dados sincronizados')}else if(hasLocalData()){await pushCloud()}else setSyncStatus('☁️ Pronto para sincronizar');cloudLoaded=true}
+async function pullCloud(){
+ if(!currentUser||!client||cloudDirty||cloudSavePromise)return;
+ setSyncStatus('☁️ Carregando dados...');
+ const {data,error}=await client.from('planner_app_state').select('data').eq('user_id',currentUser.id).maybeSingle();
+ if(error){console.error(error);setSyncStatus('⚠️ Erro ao carregar');return}
+ if(data&&data.data&&typeof data.data==='object'){
+   const incoming={...empty,...data.data};
+   keys.forEach(k=>{if(!Array.isArray(incoming[k]))incoming[k]=[]});
+   const incomingCount=keys.reduce((n,k)=>n+incoming[k].length,0);
+   const localCount=keys.reduce((n,k)=>n+(Array.isArray(state[k])?state[k].length:0),0);
+   if(incomingCount===0 && localCount>0){
+     // Nunca substituir uma tela com dados por uma cópia vazia.
+     cloudDirty=true;cloudLoaded=true;setSyncStatus('☁️ Protegendo seus dados...');await pushCloud();return;
+   }
+   state=incoming;localStorage.setItem(STORAGE,JSON.stringify(state));cloudLoaded=true;render();setSyncStatus('☁️ Dados sincronizados');
+ }else if(hasLocalData()){
+   cloudLoaded=true;cloudDirty=true;await pushCloud();
+ }else{
+   cloudLoaded=true;setSyncStatus('☁️ Pronto para sincronizar');
+ }
+}
 function setSyncStatus(text){const x=$('syncStatus');if(x)x.textContent=text}
 function setView(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v));document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));if(v==='agenda')calendar();if(v==='financeiro')renderFinance()}
 function eventCard(e){return '<article class="content-card"><div><h3>'+esc(e.title)+'</h3><p>'+esc(e.details||'')+'</p><div class="meta"><span class="badge">📅 '+fmt(e.date)+'</span>'+(e.time?'<span class="badge">🕒 '+esc(e.time)+'</span>':'')+(e.category?'<span class="badge">🏷️ '+esc(e.category)+'</span>':'')+(e.location?'<span class="badge">📍 '+esc(e.location)+'</span>':'')+'</div></div><div class="card-actions"><button class="primary edit-event-btn" type="button" onclick="editItem(\'event\',\''+e.id+'\')">✏️ Editar</button><button class="icon-btn danger" type="button" onclick="removeItem(\'event\',\''+e.id+'\')">🗑</button></div></article>'}
