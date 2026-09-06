@@ -46,3 +46,33 @@ bindQuickAdd('addQuickGoal',window.quickAddGoal);
 bindQuickAdd('addQuickNote',window.quickAddNote);
 document.addEventListener('click',e=>{const b=e.target.closest('#addQuickTask,#addQuickGoal,#addQuickNote');if(!b)return;e.preventDefault();if(b.id==='addQuickTask')window.quickAddTask();if(b.id==='addQuickGoal')window.quickAddGoal();if(b.id==='addQuickNote')window.quickAddNote()});
 document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>setView(b.dataset.view));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setView(b.dataset.go));document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openModal(b.dataset.add));$('closeModal').onclick=close;$('modal').onclick=e=>{if(e.target===$('modal'))close()};const quoteCard=$('quoteCard');if(quoteCard)quoteCard.onclick=()=>{let v=prompt('Escreva a frase do dia:',state.quote||'');if(v!==null){state.quote=v;save()}};$('prevMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);calendar()};$('nextMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);calendar()};$('authForm').onsubmit=e=>{e.preventDefault();handleAuth()};$('authMode').onchange=()=>{$('authSubmit').textContent=$('authMode').value==='signup'?'Criar e sincronizar':'Entrar e sincronizar'};$('authLogout').onclick=async()=>{await client.auth.signOut();currentUser=null;showAuth();setSyncStatus('Entre para sincronizar')};window.addEventListener('focus',()=>{if(currentUser&&cloudLoaded)pullCloud()});try{render()}catch(err){console.error('Erro na renderização inicial',err);setSyncStatus('☁️ Carregando seus dados...')}
+
+// Correção de navegação do Financeiro: garante abertura mesmo após atualizações de sincronização.
+(function(){
+  function openPlannerView(view){
+    document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id===view));
+    document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.view===view));
+    if(view==='financeiro'){
+      try{ renderFinance(); }catch(err){ console.error('Erro ao abrir Financeiro',err); }
+    }
+    if(view==='agenda'){
+      try{ calendar(); }catch(err){ console.error('Erro ao abrir Agenda',err); }
+    }
+  }
+  window.setPlannerView=openPlannerView;
+  document.addEventListener('click',function(e){
+    const financeNav=e.target.closest('.nav-item[data-view="financeiro"]');
+    if(financeNav){
+      e.preventDefault();
+      e.stopPropagation();
+      openPlannerView('financeiro');
+      return;
+    }
+    const financeCard=e.target.closest('#financeMonthCard,[data-go="financeiro"]');
+    if(financeCard){
+      e.preventDefault();
+      e.stopPropagation();
+      openPlannerView('financeiro');
+    }
+  },true);
+})();
