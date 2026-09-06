@@ -6,3 +6,22 @@
 /* Dashboard: aniversariantes ao lado da frase e financeiro abaixo. O botão Novo lançamento fica somente dentro da página Financeiro. */
 #financeMonthCard.wide{min-height:205px}
 #financeMonthCard .panel-head{padding-bottom:8px}
+
+
+/* Páginas internas de Tarefas e Metas / Anotações */
+.planner-quote{margin:0 0 22px;padding:30px 24px;border:1px solid var(--line);border-radius:28px;background:rgba(255,255,255,.78);text-align:center;font-size:27px;font-style:italic;color:#5f5a65;line-height:1.45}
+.planner-duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.planner-box{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:24px;padding:18px 20px 16px}
+.planner-box h2,.planner-pending h2{margin:0 0 12px;font-size:29px}
+.planner-box textarea{width:100%;min-height:130px;resize:vertical;border:1px solid var(--line);border-radius:18px;padding:16px;font:inherit;font-size:18px;color:var(--text);background:#fffdfd;outline:none}
+.planner-box textarea:focus{border-color:#c797a5;box-shadow:0 0 0 3px rgba(199,151,165,.12)}
+.soft-action{margin-top:10px;border:0;background:#ead7dd;color:#855c69;padding:10px 14px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer}
+.soft-action:hover{background:#e2c9d0}
+.planner-pending{margin-top:22px}
+.planner-pending>.cards-list,.planner-pending>.notes-grid{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:24px;padding:16px;min-height:115px}
+.planner-pending .list-empty{text-align:center;font-size:18px;padding:24px}
+.planner-pending .list-empty small{display:block;margin-top:7px;font-size:15px}
+.goal-list{display:grid;gap:8px;margin-top:12px}
+.goal-item,.goal-empty{padding:10px 12px;border-radius:14px;background:#fbf6f8;border:1px solid var(--line);color:var(--muted)}
+.planner-note-box{margin-top:0}
+@media(max-width:850px){.planner-duo{grid-template-columns:1fr}.planner-quote{font-size:23px}.planner-box h2,.planner-pending h2{font-size:25px}}
