@@ -35,3 +35,8 @@
 #entryForm{overflow-y:auto;padding-right:4px;flex:1}
 #entryForm .form-actions{padding-top:4px}
 @media(max-width:600px){.modal{padding:10px}.modal-card{max-height:calc(100vh - 20px);padding:20px;border-radius:20px}.modal-head{padding-right:38px}.modal-head h2{font-size:25px}.modal-head .primary{padding:10px 12px;font-size:14px}}
+
+
+/* Resumo detalhado dos gastos do mês */
+.finance-summary-card{grid-column:1/-1;background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 8px 24px rgba(124,91,101,.04)}
+.finance-summary-card h2{margin:0 0 16px;font-size:26px}.finance-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.finance-category{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:#fbf6f8;color:#5f5861}.finance-category b{color:#7d5965;white-space:nowrap}.finance-total-card{grid-column:1/-1}.finance-total-card h3{font-size:27px}.finance-total-card p{font-size:25px;font-weight:800;color:#7d5965}.finance-entry-card h3{font-size:24px}.finance-entry-card p{font-size:22px;font-weight:800}@media(max-width:600px){.finance-category-grid{grid-template-columns:1fr}.finance-summary-card{padding:18px}.finance-summary-card h2{font-size:23px}}
