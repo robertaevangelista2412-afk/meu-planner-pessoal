@@ -25,3 +25,13 @@
 .goal-item,.goal-empty{padding:10px 12px;border-radius:14px;background:#fbf6f8;border:1px solid var(--line);color:var(--muted)}
 .planner-note-box{margin-top:0}
 @media(max-width:850px){.planner-duo{grid-template-columns:1fr}.planner-quote{font-size:23px}.planner-box h2,.planner-pending h2{font-size:25px}}
+
+
+/* Modal de lançamento: ação principal sempre visível no topo */
+.modal-card{max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 44px 16px 0;flex:0 0 auto}
+.modal-head h2{margin:0}
+.modal-head .primary{white-space:nowrap}
+#entryForm{overflow-y:auto;padding-right:4px;flex:1}
+#entryForm .form-actions{padding-top:4px}
+@media(max-width:600px){.modal{padding:10px}.modal-card{max-height:calc(100vh - 20px);padding:20px;border-radius:20px}.modal-head{padding-right:38px}.modal-head h2{font-size:25px}.modal-head .primary{padding:10px 12px;font-size:14px}}
