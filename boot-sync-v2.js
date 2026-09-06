@@ -17,18 +17,12 @@ try{
  let local={};try{local=JSON.parse(localText)}catch{}
  const cloudCount=countState(cloud),localCount=countState(local);
  // A nuvem é a cópia de segurança: nunca sobrescrevemos uma cópia maior por uma tela vazia.
- if(cloudCount>0 && (localCount===0 || cloudCount>=localCount || JSON.stringify(cloud)!==localText)){
+ if(cloudCount>0){
    localStorage.setItem(STORAGE,JSON.stringify(cloud));
+   window.__plannerCloudState=cloud;
    window.__plannerCloudRecovery={count:cloudCount,updatedAt:data.updated_at};
-   const attempts=Number(sessionStorage.getItem('planner-recovery-attempts')||'0');
-   if(attempts<2){
-     sessionStorage.setItem('planner-recovery-attempts',String(attempts+1));
-     status('☁️ Dados recuperados. Reabrindo Planner...');
-     setTimeout(()=>location.reload(),250);
-     return;
-   }
+   window.dispatchEvent(new CustomEvent('planner-cloud-state',{detail:cloud}));
  }
- sessionStorage.removeItem('planner-recovery-attempts');
  status('☁️ Dados sincronizados');
 }catch(e){console.error('BOOT RECOVERY',e);status('⚠️ '+(e&&e.message?e.message:'Erro na sincronização'))}
 })();
