@@ -4,12 +4,20 @@ const SUPABASE_KEY='sb_publishable_BEoptb7_L-2pqS_SQ16Eqg_TNzy-xeK';
 const empty={events:[],tasks:[],goals:[],people:[],notes:[],house:[],trips:[],studies:[],outings:[],transactions:[],priority:'',quote:'Pequenos passos todos os dias também levam a grandes conquistas.'};
 const keys=['events','tasks','goals','people','notes','house','trips','studies','outings','transactions'];
 let state,month=new Date(new Date().getFullYear(),new Date().getMonth(),1),cloudTimer=null,client=null,currentUser=null,cloudLoaded=false;
-try{state={...empty,...JSON.parse(localStorage.getItem(STORAGE)||'{}')}}catch{state={...empty}}keys.forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});
+try{state={...empty,...(window.__plannerCloudState||JSON.parse(localStorage.getItem(STORAGE)||'{}'))}}catch{state={...empty}}keys.forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});
+window.addEventListener('planner-cloud-state',e=>{
+  const incoming=e.detail;
+  if(!incoming||typeof incoming!=='object')return;
+  state={...empty,...incoming};
+  keys.forEach(k=>{if(!Array.isArray(state[k]))state[k]=[]});
+  localStorage.setItem(STORAGE,JSON.stringify(state));
+  try{render()}catch(err){console.error('Erro ao renderizar dados recuperados',err)}
+});
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])),id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7),iso=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),fmt=d=>d?new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium'}).format(new Date(d+'T12:00:00')):'';
 function hasLocalData(){return keys.some(k=>state[k].length)||!!state.priority||(state.quote&&state.quote!==empty.quote)}
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));render();queueCloudSave()}
-function queueCloudSave(){if(!currentUser||!client)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,350)}
-async function pushCloud(){if(!currentUser||!client)return;const {error}=await client.from('planner_app_state').upsert({user_id:currentUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){console.error(error);setSyncStatus('⚠️ Não foi possível sincronizar agora') }else setSyncStatus('☁️ Sincronizado')}
+function queueCloudSave(){if(!cloudLoaded||!currentUser||!client)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,350)}
+async function pushCloud(){if(!cloudLoaded||!currentUser||!client)return;const {error}=await client.from('planner_app_state').upsert({user_id:currentUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){console.error(error);setSyncStatus('⚠️ Não foi possível sincronizar agora') }else setSyncStatus('☁️ Sincronizado')}
 async function pullCloud(){if(!currentUser||!client)return;const {data,error}=await client.from('planner_app_state').select('data').eq('user_id',currentUser.id).maybeSingle();if(error){console.error(error);setSyncStatus('⚠️ Erro ao carregar');return}if(data&&data.data){const cloudState={...empty,...data.data};keys.forEach(k=>{if(!Array.isArray(cloudState[k]))cloudState[k]=[]});const localHas=hasLocalData();const localCount=keys.reduce((n,k)=>n+(Array.isArray(state[k])?state[k].length:0),0);const cloudCount=keys.reduce((n,k)=>n+(Array.isArray(cloudState[k])?cloudState[k].length:0),0);if(localHas&&localCount>cloudCount){setSyncStatus('☁️ Mantendo dados locais...');await pushCloud()}else{state=cloudState;localStorage.setItem(STORAGE,JSON.stringify(state));render();setSyncStatus('☁️ Dados sincronizados')}}else if(hasLocalData()){await pushCloud()}else setSyncStatus('☁️ Pronto para sincronizar');cloudLoaded=true}
 function setSyncStatus(text){const x=$('syncStatus');if(x)x.textContent=text}
 function setView(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v));document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===v));if(v==='agenda')calendar()}
