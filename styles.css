@@ -41,14 +41,13 @@
 .finance-summary-card{grid-column:1/-1;background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 8px 24px rgba(124,91,101,.04)}
 .finance-summary-card h2{margin:0 0 16px;font-size:26px}.finance-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.finance-category{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:#fbf6f8;color:#5f5861}.finance-category b{color:#7d5965;white-space:nowrap}.finance-total-card{grid-column:1/-1}.finance-total-card h3{font-size:27px}.finance-total-card p{font-size:25px;font-weight:800;color:#7d5965}.finance-entry-card h3{font-size:24px}.finance-entry-card p{font-size:22px;font-weight:800}@media(max-width:600px){.finance-category-grid{grid-template-columns:1fr}.finance-summary-card{padding:18px}.finance-summary-card h2{font-size:23px}}
 
-/* Resumo financeiro no início */
-#financeMonthText{display:flex;flex-direction:column;gap:14px}
-.home-finance-entry,.home-finance-total{display:flex;align-items:center;gap:8px;font-size:1rem}
-.home-finance-entry b,.home-finance-total b{margin-left:auto;font-size:1.08rem}
-.home-finance-summary-title{font-weight:800;font-size:1.05rem;margin-top:2px}
-.home-finance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.home-finance-category{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(120,90,100,.14);border-radius:12px;background:rgba(255,255,255,.38);font-size:.86rem}
-.home-finance-category span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-finance-category b{white-space:nowrap;font-size:.86rem}
-.home-finance-total{padding-top:12px;border-top:1px solid rgba(120,90,100,.14);font-weight:800}
-@media(max-width:850px){.home-finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.home-finance-grid{grid-template-columns:1fr}.home-finance-category{font-size:.82rem}}
+/* Resumo financeiro no início — mesmas abinhas da página Financeiro */
+#financeMonthText{display:flex;flex-direction:column;gap:12px}
+.home-finance-line{display:flex;align-items:center;gap:8px;font-size:1rem;font-weight:700;padding:2px 0}.home-finance-line b{margin-left:auto;font-size:1.05rem;color:#7d5965}
+.home-finance-summary-title{font-weight:800;font-size:1.08rem;margin-top:2px}
+.home-finance-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.home-finance-tab{min-width:0;padding:12px 13px!important;border-radius:15px!important;background:#fbf6f8!important}.home-finance-tab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-finance-tab b{font-size:.92rem}
+.home-finance-total{padding-top:12px;border-top:1px solid var(--line);margin-top:2px}
+@media(max-width:1000px){.home-finance-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.home-finance-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.home-finance-tabs{grid-template-columns:1fr}}
