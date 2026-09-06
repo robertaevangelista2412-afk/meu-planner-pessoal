@@ -71,3 +71,8 @@
 .calendar-events{display:grid;gap:5px;margin-top:7px}
 .calendar-event-item{display:block;width:100%;border:1px solid #e6b9c5;background:#fbecef;color:#6f3f4c;border-radius:8px;padding:5px 7px;text-align:left;font:700 10px Quicksand,Arial,sans-serif;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .calendar-event-item:hover{background:#f7e0e6;color:#56303b}
+
+
+/* Correção visual definitiva da Agenda: TODOS os dias recebem exatamente o mesmo rosinha claro do dia atual. */
+.calendar-grid .calendar-day{background-color:#fff4f6!important;background:#fff4f6!important;}
+.calendar-grid .calendar-day.today{background-color:#fff4f6!important;background:#fff4f6!important;border-color:#c797a5!important;}
