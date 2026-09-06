@@ -10,7 +10,7 @@ const FINANCE_MONTH_STORAGE='financeMonthKey';
 const financeMonthFromDate=v=>{const x=String(v||'');return /^\d{4}-\d{2}/.test(x)?x.slice(0,7):''};
 const transactionMonthKey=x=>financeMonthFromDate(x&&((x.dueDate||x.date)||x.paymentDate));
 const transactionInMonth=(x,key)=>transactionMonthKey(x)===key;
-const financeAmountOf=x=>{const raw=String(x&&x.amount??'').trim();const v=raw.includes(',')?raw.replace(/\./g,'').replace(',','.'):raw;return Number(v)||0};
+const financeAmountOf=x=>{const raw=String((x&&x.amount)??'').trim();const v=raw.includes(',')?raw.replace(/\./g,'').replace(',','.'):raw;return Number(v)||0};
 const financeTypeOf=x=>String(x&&x.type||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 function getFinanceMonthKey(fallback){
  const stored=window.financeMonthKey||localStorage.getItem(FINANCE_MONTH_STORAGE);
