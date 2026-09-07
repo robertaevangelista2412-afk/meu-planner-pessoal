@@ -12,7 +12,7 @@
 </div></section>
 <section id="agenda" class="view"><div class="section-head"><div><h1>📅 Minha Semana</h1><p>Organize seus compromissos importantes.</p></div><button class="primary" data-add="event">＋ Novo compromisso</button></div><section class="calendar-panel"><div class="calendar-head"><button id="prevMonth">‹</button><h2 id="calendarTitle"></h2><button id="nextMonth">›</button></div><div class="weekdays"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div id="calendarGrid" class="calendar-grid"></div></section><div id="eventList" class="cards-list"></div></section>
 <section id="tasks" class="view"><div class="section-head"><div><h1>📌 Tarefas e Metas</h1></div></div><section class="planner-quote">“Pequenos passos todos os dias também levam a grandes conquistas.”</section><div class="planner-duo"><section class="planner-box"><h2>📋 Minhas tarefas</h2><textarea id="quickTask" placeholder="Digite suas tarefas aqui..."></textarea><button id="addQuickTask" class="soft-action" type="button">Adicionar tarefa</button></section><section class="planner-box"><h2>🎯 Minhas metas</h2><textarea id="quickGoal" placeholder="Digite suas metas aqui..."></textarea><button id="addQuickGoal" class="soft-action" type="button">Adicionar meta</button><div id="goalList" class="goal-list"></div></section></div><section class="planner-pending"><h2>📌 Pendências</h2><div id="taskList" class="cards-list"></div></section></section>
-<section id="people" class="view"><div class="section-head"><div><h1>🎂 Datas Importantes</h1><p>Cadastre aniversários e pessoas especiais.</p></div><button class="primary" data-add="person">＋ Adicionar pessoa</button></div><div id="peopleMonthFilterBar" class="people-months"></div><div id="peopleList" class="people-grid"></div></section>
+<section id="people" class="view"><div class="section-head"><div><h1>🎂 Datas Importantes</h1><p>Cadastre aniversários e pessoas especiais.</p></div><button class="primary" data-add="person">＋ Adicionar pessoa</button></div><div id="peopleList" class="people-grid"></div></section>
 <section id="notes" class="view"><div class="section-head"><div><h1>📝 Anotações</h1></div></div><section class="planner-quote">“Pequenos passos todos os dias também levam a grandes conquistas.”</section><section class="planner-box planner-note-box"><h2>📝 Minhas anotações</h2><textarea id="quickNote" placeholder="Digite suas anotações aqui..."></textarea><button id="addQuickNote" class="soft-action" type="button">Adicionar anotação</button></section><section class="planner-pending"><h2>📝 Anotações recentes</h2><div id="notesList" class="notes-grid"></div></section></section>
 <section id="financeiro" class="view"><div class="section-head"><div><h1>💰 Financeiro Pessoal</h1><p>Controle suas entradas, saídas e acompanhe seu saldo.</p></div><button class="primary" type="button" onclick="openFinanceModal()">＋ Novo lançamento</button></div><div class="finance-months-wrap"><h2>📅 Escolha o mês</h2><div id="financeMonths" class="finance-months"></div></div><h2 id="financePageMonth" style="margin:24px 0 14px"></h2><div id="financeSummary" class="dashboard-grid"></div><div style="margin-top:24px"><h2>📋 Lançamentos do mês</h2><div id="financeList" class="cards-list"></div></div></section>
 <section id="casa" class="view"><div class="section-head"><div><h1>🏠 Minha Casa</h1><p>Organize tarefas, compras, ideias e projetos da sua casa.</p></div><button class="primary" data-add="house">＋ Adicionar</button></div><div id="houseList" class="cards-list"></div></section>
@@ -20,29 +20,5 @@
 <section id="passeios" class="view"><div class="section-head"><div><h1>🎡 Passeios</h1><p>Organize lugares para conhecer, lazer e passeios planejados.</p></div><button class="primary" data-add="outing">＋ Adicionar passeio</button></div><div id="outingList" class="cards-list"></div></section><section id="estudos" class="view"><div class="section-head"><div><h1>📚 Estudos</h1><p>Organize matérias, cursos, metas e anotações de aprendizado.</p></div><button class="primary" data-add="study">＋ Adicionar estudo</button></div><div id="studyList" class="cards-list"></div></section>
 </main></div><div id="modal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="close">×</button><div class="modal-head"><h2 id="modalTitle"></h2><button id="modalSave" class="primary hidden" type="submit" form="entryForm">＋ Incluir lançamento</button></div><form id="entryForm"></form></div></div>
 <div id="authOverlay" class="auth-overlay hidden"><div class="auth-card"><div class="auth-flower">🌷</div><h1>Sincronize seu Planner</h1><p>Entre com a mesma conta no computador e no tablet para que tudo o que você cadastrar apareça nos dois aparelhos.</p><form id="authForm" class="form-grid"><label>Como deseja acessar?<select id="authMode"><option value="signin">Já tenho uma conta</option><option value="signup">Criar minha conta</option></select></label><label>E-mail<input id="authEmail" type="email" autocomplete="email" required></label><label>Senha<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></label><div id="authMessage" class="auth-message"></div><button id="authSubmit" class="primary" type="submit">Entrar e sincronizar</button></form><small>Na primeira vez, seus dados que já estão neste aparelho serão enviados para sua conta. Depois, basta entrar com a mesma conta no outro aparelho.</small></div></div>
-<script src="app-v56.js?v=20260906-319"></script>
-<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-(function(){
-  const months=['Todos','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  let selected=0;
-  function monthFromCard(card){
-    const txt=(card.innerText||card.textContent||'').toLowerCase();
-    const names=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    for(let i=0;i<names.length;i++) if(txt.includes(names[i]+'.')||txt.includes(' de '+names[i])) return i+1;
-    return 0;
-  }
-  function apply(){
-    const bar=document.getElementById('peopleMonthFilterBar');
-    const list=document.getElementById('peopleList');
-    if(!bar||!list)return;
-    bar.innerHTML=months.map((m,i)=>'<button type="button" class="people-month-btn '+(selected===i?'active':'')+'" data-month-filter="'+i+'">'+m+'</button>').join('');
-    bar.querySelectorAll('[data-month-filter]').forEach(b=>b.onclick=()=>{selected=Number(b.dataset.monthFilter);apply();});
-    Array.from(list.querySelectorAll('.person-card')).forEach(card=>{
-      const m=monthFromCard(card);
-      card.style.display=(selected===0||m===selected)?'':'none';
-    });
-  }
-  function start(){apply(); const list=document.getElementById('peopleList'); if(list)new MutationObserver(()=>setTimeout(apply,0)).observe(list,{childList:true,subtree:false});}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();
-</script></body></html>
+<script src="app-v56.js?v=20260906-320"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></body></html>
