@@ -80,3 +80,7 @@
 
 /* Datas Importantes organizadas por mês: apenas apresentação, sem alterar os cadastros. */
 #peopleList{display:block}.people-month-group{margin:0 0 28px}.people-month-title{margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:#fff0f3;color:#765e68;font-size:18px}
+
+
+/* Seletor mensal - Datas Importantes */
+.people-months{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}.people-month-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font:inherit;color:#765e68;cursor:pointer}.people-month-btn.active{background:#d9a0ad;color:#fff;border-color:#d9a0ad}.people-month-title{font-size:19px}
