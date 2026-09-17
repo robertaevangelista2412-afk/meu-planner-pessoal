@@ -19,28 +19,11 @@ async function renderGallery(){ensureUI();const grid=$('photoGalleryGrid');grid.
 function close(){document.getElementById('photoGalleryModal')?.classList.add('hidden');currentKey='';currentTitle=''}
 async function open(type,id,title){ensureUI();currentKey=type+':'+id;currentTitle=title||'Fotos';$('photoGalleryTitle').textContent='📸 Fotos — '+currentTitle;$('photoGalleryModal').classList.remove('hidden');$('photoGalleryStatus').textContent='';renderGallery()}
 window.openPhotoGallery=open;
-function addButtons(){
-  ['tripList','outingList'].forEach(listId=>{
-    const list=$(listId); if(!list)return;
-    const type=listId==='tripList'?'trip':'outing';
-    list.querySelectorAll('.content-card').forEach(card=>{
-      if(card.querySelector('.photo-gallery-trigger'))return;
-      const buttons=[...card.querySelectorAll('button')];
-      const edit=buttons.find(b=>(b.getAttribute('onclick')||'').includes('editItem'));
-      if(!edit)return;
-      const onclick=edit.getAttribute('onclick')||'';
-      const p=onclick.indexOf('editItem('); if(p<0)return;
-      const inside=onclick.slice(p+9).split(')')[0];
-      const args=inside.split(',').map(v=>v.trim().replace(/^['"]|['"]$/g,''));
-      if(args.length<2)return;
-      const b=document.createElement('button');
-      b.type='button'; b.className='icon-btn photo-gallery-trigger'; b.textContent='📸'; b.title='Fotos'; b.setAttribute('aria-label','Fotos');
-      b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const title=(card.querySelector('h3')?.textContent||'Fotos').replace(type==='trip'?'✈️':'🎡','').trim();open(type,args[1],title);});
-      edit.parentElement.insertBefore(b,edit);
-    });
-  });
-}
 ensureUI();
-new MutationObserver(addButtons).observe(document.body,{childList:true,subtree:true});
-addButtons();
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.photo-gallery-trigger');
+  if(!btn)return;
+  e.preventDefault(); e.stopPropagation();
+  open(btn.dataset.galleryType,btn.dataset.galleryId,btn.dataset.galleryTitle||'Fotos');
+},true);
 })();
