@@ -27,13 +27,13 @@ const bindGalleryTriggers=()=>{
     btn.dataset.galleryBound='1';
     btn.addEventListener('click',function(e){
       e.preventDefault();
-      e.stopPropagation();
-      const inline=this.getAttribute('onclick')||'';
-      const m=inline.match(/openPhotoGallery\\&&window\\.openPhotoGallery\\('([^']+)','([^']+)','([^']*)'\\)/);
-      if(m){
-        const title=m[3].replace(/&#039;/g,"'");
-        open(m[1],m[2],title);
-      }
+      e.stopImmediatePropagation();
+      const type=this.closest('#tripList')?'trip':'outing';
+      const card=this.closest('.content-card');
+      const edit=card?.querySelector('.card-actions button[onclick*="editItem"]');
+      const onclick=edit?.getAttribute('onclick')||'';
+      const m=onclick.match(/editItem\(['"]([^'"]+)['"],['"]([^'"]+)['"]\)/);
+      if(m) open(type,m[2],(card.querySelector('h3')?.textContent||'').replace(type==='trip'?'✈️':'🎡','').trim()||'Fotos');
     },true);
   });
 };
