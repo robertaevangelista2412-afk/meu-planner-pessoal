@@ -20,36 +20,27 @@ function close(){document.getElementById('photoGalleryModal')?.classList.add('hi
 async function open(type,id,title){ensureUI();currentKey=type+':'+id;currentTitle=title||'Fotos';$('photoGalleryTitle').textContent='📸 Fotos — '+currentTitle;$('photoGalleryModal').classList.remove('hidden');$('photoGalleryStatus').textContent='';renderGallery()}
 window.openPhotoGallery=open;
 function addButtons(){
-  [['tripList','trip','✈️'],['outingList','outing','🎡']].forEach(([listId,type,icon])=>{
+  ['tripList','outingList'].forEach(listId=>{
     const list=$(listId); if(!list)return;
+    const type=listId==='tripList'?'trip':'outing';
     list.querySelectorAll('.content-card').forEach(card=>{
       if(card.querySelector('.photo-gallery-trigger'))return;
-      const edit=[...card.querySelectorAll('button')].find(b=>(b.getAttribute('onclick')||'').includes('editItem'));
+      const buttons=[...card.querySelectorAll('button')];
+      const edit=buttons.find(b=>(b.getAttribute('onclick')||'').includes('editItem'));
       if(!edit)return;
-      const s=edit.getAttribute('onclick')||'';
-      const m=s.match(/editItem\\(['"]([^'"]+)['"],['"]([^'"]+)['"]\\)/);
-      if(!m)return;
-      const title=(card.querySelector('h3')?.textContent||'').replace(icon,'').trim()||'Fotos';
-      const b=document.createElement('button'); b.type='button'; b.className='icon-btn photo-gallery-trigger'; b.textContent='📸'; b.title='Fotos'; b.setAttribute('aria-label','Fotos');
-      b.onclick=()=>open(type,m[2],title); edit.parentElement.insertBefore(b,edit);
+      const onclick=edit.getAttribute('onclick')||'';
+      const p=onclick.indexOf('editItem('); if(p<0)return;
+      const inside=onclick.slice(p+9).split(')')[0];
+      const args=inside.split(',').map(v=>v.trim().replace(/^['"]|['"]$/g,''));
+      if(args.length<2)return;
+      const b=document.createElement('button');
+      b.type='button'; b.className='icon-btn photo-gallery-trigger'; b.textContent='📸'; b.title='Fotos'; b.setAttribute('aria-label','Fotos');
+      b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const title=(card.querySelector('h3')?.textContent||'Fotos').replace(type==='trip'?'✈️':'🎡','').trim();open(type,args[1],title);});
+      edit.parentElement.insertBefore(b,edit);
     });
   });
 }
 ensureUI();
-document.addEventListener('click',function(e){
-  const btn=e.target.closest('#tripList .photo-gallery-trigger,#outingList .photo-gallery-trigger');
-  if(!btn)return;
-  e.preventDefault(); e.stopImmediatePropagation();
-  const card=btn.closest('.content-card');
-  const edit=card?.querySelector('button[onclick*="editItem"]');
-  const s=edit?.getAttribute('onclick')||'';
-  const m=s.match(/editItem\\(['"]([^'"]+)['"],['"]([^'"]+)['"]\\)/);
-  if(m){
-    const icon=m[1]==='trip'?'✈️':'🎡';
-    const title=(card?.querySelector('h3')?.textContent||'').replace(icon,'').trim()||'Fotos';
-    open(m[1],m[2],title);
-  }
-},true);
 new MutationObserver(addButtons).observe(document.body,{childList:true,subtree:true});
 addButtons();
 })();
