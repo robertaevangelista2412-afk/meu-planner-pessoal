@@ -20,4 +20,25 @@ function close(){document.getElementById('photoGalleryModal')?.classList.add('hi
 async function open(type,id,title){ensureUI();currentKey=type+':'+id;currentTitle=title||'Fotos';$('photoGalleryTitle').textContent='📸 Fotos — '+currentTitle;$('photoGalleryModal').classList.remove('hidden');$('photoGalleryStatus').textContent='';renderGallery()}
 window.openPhotoGallery=open;
 function addButtons(){[['tripList','trip','✈️'],['outingList','outing','🎡']].forEach(([listId,type,icon])=>{const list=$(listId);if(!list)return;list.querySelectorAll('.content-card').forEach(card=>{const edit=[...card.querySelectorAll('button')].find(b=>(b.getAttribute('onclick')||'').includes('editItem(\\''+type+'\\''));if(card.querySelector('.photo-gallery-trigger'))return;if(!edit)return;const m=(edit.getAttribute('onclick')||'').match(/editItem\\(['"]([^'"]+)['"],['"]([^'"]+)['"]\\)/);if(!m||m[1]!==type)return;const title=(card.querySelector('h3')?.textContent||'').replace(icon,'').trim()||'Fotos';const b=document.createElement('button');b.type='button';b.className='icon-btn photo-gallery-trigger';b.textContent='📸';b.title='Fotos';b.setAttribute('aria-label','Fotos');b.onclick=()=>open(type,m[2],title);edit.parentElement.insertBefore(b,edit)})})}
-ensureUI();new MutationObserver(addButtons).observe(document.body,{childList:true,subtree:true});addButtons();setInterval(addButtons,800)})();
+ensureUI();
+const bindGalleryTriggers=()=>{
+  document.querySelectorAll('#tripList .photo-gallery-trigger,#outingList .photo-gallery-trigger').forEach(btn=>{
+    if(btn.dataset.galleryBound==='1')return;
+    btn.dataset.galleryBound='1';
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const inline=this.getAttribute('onclick')||'';
+      const m=inline.match(/openPhotoGallery\\&&window\\.openPhotoGallery\\('([^']+)','([^']+)','([^']*)'\\)/);
+      if(m){
+        const title=m[3].replace(/&#039;/g,"'");
+        open(m[1],m[2],title);
+      }
+    },true);
+  });
+};
+new MutationObserver(()=>{addButtons();bindGalleryTriggers()}).observe(document.body,{childList:true,subtree:true});
+addButtons();
+bindGalleryTriggers();
+setInterval(()=>{addButtons();bindGalleryTriggers()},500);
+})();
