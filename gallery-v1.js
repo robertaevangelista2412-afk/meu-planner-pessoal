@@ -19,11 +19,26 @@ async function renderGallery(){ensureUI();const grid=$('photoGalleryGrid');grid.
 function close(){document.getElementById('photoGalleryModal')?.classList.add('hidden');currentKey='';currentTitle=''}
 async function open(type,id,title){ensureUI();currentKey=type+':'+id;currentTitle=title||'Fotos';$('photoGalleryTitle').textContent='📸 Fotos — '+currentTitle;$('photoGalleryModal').classList.remove('hidden');$('photoGalleryStatus').textContent='';renderGallery()}
 window.openPhotoGallery=open;
+function addButtons(){[['tripList','trip','✈️'],['outingList','outing','🎡']].forEach(([listId,type,icon])=>{const list=$(listId);if(!list)return;list.querySelectorAll('.content-card').forEach(card=>{const edit=[...card.querySelectorAll('button')].find(b=>(b.getAttribute('onclick')||'').includes('editItem(\\''+type+'\\''));if(card.querySelector('.photo-gallery-trigger'))return;if(!edit)return;const m=(edit.getAttribute('onclick')||'').match(/editItem\\(['"]([^'"]+)['"],['"]([^'"]+)['"]\\)/);if(!m||m[1]!==type)return;const title=(card.querySelector('h3')?.textContent||'').replace(icon,'').trim()||'Fotos';const b=document.createElement('button');b.type='button';b.className='icon-btn photo-gallery-trigger';b.textContent='📸';b.title='Fotos';b.setAttribute('aria-label','Fotos');b.onclick=()=>open(type,m[2],title);edit.parentElement.insertBefore(b,edit)})})}
 ensureUI();
-document.addEventListener('click',function(e){
-  const btn=e.target.closest('.photo-gallery-trigger');
-  if(!btn)return;
-  e.preventDefault(); e.stopPropagation();
-  open(btn.dataset.galleryType,btn.dataset.galleryId,btn.dataset.galleryTitle||'Fotos');
-},true);
+const bindGalleryTriggers=()=>{
+  document.querySelectorAll('#tripList .photo-gallery-trigger,#outingList .photo-gallery-trigger').forEach(btn=>{
+    if(btn.dataset.galleryBound==='1')return;
+    btn.dataset.galleryBound='1';
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const type=this.closest('#tripList')?'trip':'outing';
+      const card=this.closest('.content-card');
+      const edit=card?.querySelector('.card-actions button[onclick*="editItem"]');
+      const onclick=edit?.getAttribute('onclick')||'';
+      const m=onclick.match(/editItem\(['"]([^'"]+)['"],['"]([^'"]+)['"]\)/);
+      if(m) open(type,m[2],(card.querySelector('h3')?.textContent||'').replace(type==='trip'?'✈️':'🎡','').trim()||'Fotos');
+    },true);
+  });
+};
+new MutationObserver(()=>{addButtons();bindGalleryTriggers()}).observe(document.body,{childList:true,subtree:true});
+addButtons();
+bindGalleryTriggers();
+setInterval(()=>{addButtons();bindGalleryTriggers()},500);
 })();
