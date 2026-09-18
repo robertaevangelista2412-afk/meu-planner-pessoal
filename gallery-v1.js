@@ -22,5 +22,20 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 async function render(){ensureUI();const grid=$('photoGalleryGrid');grid.innerHTML='<div class="photo-gallery-empty">Carregando… 💗</div>';try{const photos=await getPhotos();if(!photos.length){grid.innerHTML='<div class="photo-gallery-empty">Ainda não há fotos nesta viagem/passeio. 💗</div>';return}grid.innerHTML=photos.map(p=>'<article class="photo-gallery-item"><img src="'+p.dataUrl+'" alt="'+esc(p.name||'Foto')+'"><div class="photo-gallery-caption">'+esc(p.name||'Foto')+'</div></article>').join('');grid.querySelectorAll('img').forEach(img=>img.onclick=()=>{$('photoGalleryLightboxImg').src=img.src;$('photoGalleryLightbox').classList.remove('hidden')})}catch(e){console.error(e);grid.innerHTML='<div class="photo-gallery-empty">Não foi possível carregar as fotos.</div>'}}
 function setStatus(t){ensureUI();$('photoGalleryStatus').textContent=t}
 ensureUI();
-document.addEventListener('click',function(e){const b=e.target.closest('.photo-gallery-trigger');if(!b)return;e.preventDefault();e.stopPropagation();const oc=b.getAttribute('onclick')||'';const m=oc.match(/openPhotoGallery\(['"]([^'"]+)['"],['"]([^'"]+)['"],['"]([^'"]*)/);if(m)open(m[1],m[2],m[3]);},true);
+document.addEventListener('click',function(e){
+  const b=e.target.closest('.photo-gallery-trigger');
+  if(!b)return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const card=b.closest('.content-card');
+  const list=b.closest('#tripList,#outingList');
+  const type=list?.id==='tripList'?'trip':list?.id==='outingList'?'outing':'';
+  const edit=card?.querySelector('button[onclick*="editItem"]');
+  const raw=edit?.getAttribute('onclick')||'';
+  const m=raw.match(/editItem\\(\\s*['"](?:trip|outing)['"]\\s*,\\s*['"]([^'"]+)['"]\\s*\\)/);
+  if(!type||!m)return;
+  const h=card?.querySelector('h3')?.textContent||'Fotos';
+  const title=h.replace(type==='trip'?'✈️':'🎡','').trim();
+  open(type,m[1],title);
+},true);
 })();
