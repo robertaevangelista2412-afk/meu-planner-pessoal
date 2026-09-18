@@ -83,7 +83,7 @@ document.addEventListener('click',function(e){
   var card=b.closest('.content-card');
   var edit=card?card.querySelector('button[onclick*="editItem"]'):null;
   var raw=edit?edit.getAttribute('onclick'):'';
-  var m=raw.match(/editItem\\(\\s*['"](?:trip|outing)['"]\\s*,\\s*['"]([^'"]+)['"]/);
+  var m=raw.match(/editItem\(\s*['"](?:trip|outing)['"]\s*,\s*['"]([^'"]+)['"]/);
   var list=b.closest('#tripList,#outingList');
   var type=list&&list.id==='tripList'?'trip':list&&list.id==='outingList'?'outing':'';
   if(!type||!m)return;
