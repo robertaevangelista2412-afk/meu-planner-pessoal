@@ -17,16 +17,12 @@ async function normalizeExisting(photos){for(const p of photos){if(!p.dataUrl)co
 async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){console.warn('Galeria nuvem:',e);return false}}
 
 async function fetchCloudPhotos(){
- const out=[];let from=0;
- while(true){
-  const to=from+3;
-  const res=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created').range(from,to);
-  if(res.error)throw res.error;
-  const rows=res.data||[];out.push(...rows);
-  if(rows.length<4)break;
-  from+=4;
- }
- return out;
+ const s=await cloudClient.auth.getSession(),token=s.data?.session?.access_token;
+ if(!token)throw new Error('Sessão ainda não disponível');
+ const params=new URLSearchParams({select:'id,album,name,data_url,created',user_id:'eq.'+cloudUser.id,album:'eq.'+currentKey,order:'created.asc',limit:'1000'});
+ const r=await fetch('https://agcqgwlusfzvvjuxunli.supabase.co/rest/v1/planner_photo_gallery?'+params.toString(),{headers:{apikey:'sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK',Authorization:'Bearer '+token}});
+ if(!r.ok)throw new Error('Falha ao carregar fotos ('+r.status+')');
+ return await r.json();
 }
 async function cloudSync(local){
  if(!(await getCloud()))return {photos:local,ok:false,failed:0};
