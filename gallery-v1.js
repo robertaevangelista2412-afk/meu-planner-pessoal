@@ -14,16 +14,9 @@ async function loadHeic(){if(window.heic2any)return window.heic2any;return new P
 async function prepareImage(file){let source=file;const n=(file.name||'').toLowerCase();if(file.type==='image/heic'||file.type==='image/heif'||/\.(heic|heif)$/.test(n)){const convert=await loadHeic();const converted=await convert({blob:file,toType:'image/jpeg',quality:.78});source=Array.isArray(converted)?converted[0]:converted}return readFile(source)}
 async function normalizeExisting(photos){for(const p of photos){if(!p.dataUrl)continue;const n=(p.name||'').toLowerCase();if(/\.(heic|heif)$/.test(n)||/^data:image\/(heic|heif)/i.test(p.dataUrl)){try{const convert=await loadHeic();const blob=await (await fetch(p.dataUrl)).blob();const converted=await convert({blob,toType:'image/jpeg',quality:.78});const jpeg=await readFile(Array.isArray(converted)?converted[0]:converted);if(jpeg&&jpeg!==p.dataUrl){p.dataUrl=jpeg;if(p.id!=null&&!p.cloudOnly)await updateLocal(p.id,p);if(p.cloudId&&cloudClient&&cloudUser)await cloudClient.from('planner_photo_gallery').update({data_url:jpeg,updated_at:new Date().toISOString()}).eq('id',p.cloudId).eq('user_id',cloudUser.id)}}catch(e){console.warn('HEIF não convertido:',e)}}}return photos}
 
-async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){console.warn('Galeria nuvem:',e);return false}}
+async function getCloud(){if(!window.supabase?.createClient)return false;try{cloudClient=window.__plannerSupabaseClient||cloudClient||window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');for(let i=0;i<20;i++){cloudUser=window.__plannerCurrentUser||null;if(!cloudUser){const x=await cloudClient.auth.getSession();cloudUser=x.data?.session?.user||null}if(cloudUser)return true;await new Promise(r=>setTimeout(r,300))}return false}catch(e){console.warn('Galeria nuvem:',e);return false}}
 
-async function fetchCloudPhotos(){
- const s=await cloudClient.auth.getSession(),token=s.data?.session?.access_token;
- if(!token)throw new Error('Sessão ainda não disponível');
- const params=new URLSearchParams({select:'id,album,name,data_url,created',user_id:'eq.'+cloudUser.id,album:'eq.'+currentKey,order:'created.asc',limit:'1000'});
- const r=await fetch('https://agcqgwlusfzvvjuxunli.supabase.co/rest/v1/planner_photo_gallery?'+params.toString(),{headers:{apikey:'sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK',Authorization:'Bearer '+token}});
- if(!r.ok)throw new Error('Falha ao carregar fotos ('+r.status+')');
- return await r.json();
-}
+async function fetchCloudPhotos(){const out=[];let from=0;while(true){const res=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created',{ascending:true}).range(from,from+1);if(res.error){if(out.length)return out;throw res.error}const rows=res.data||[];out.push(...rows);if(rows.length<2)break;from+=2}return out}
 async function cloudSync(local){
  if(!(await getCloud()))return {photos:local,ok:false,failed:0};
  try{
