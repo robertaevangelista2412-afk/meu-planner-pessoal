@@ -16,13 +16,22 @@ async function normalizeExisting(photos){for(const p of photos){if(!p.dataUrl)co
 
 async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){console.warn('Galeria nuvem:',e);return false}}
 
+async function fetchCloudPhotos(){
+ const out=[];let from=0;
+ while(true){
+  const to=from+3;
+  const res=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created').range(from,to);
+  if(res.error)throw res.error;
+  const rows=res.data||[];out.push(...rows);
+  if(rows.length<4)break;
+  from+=4;
+ }
+ return out;
+}
 async function cloudSync(local){
  if(!(await getCloud()))return {photos:local,ok:false,failed:0};
  try{
-  const first=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');
-  if(first.error)throw first.error;
-  const cloud=first.data||[], keys=new Set(cloud.map(p=>(p.name||'')+'|'+p.created));
-  let failed=0;
+  const cloud=await fetchCloudPhotos(),keys=new Set(cloud.map(p=>(p.name||'')+'|'+p.created));let failed=0;
   for(const p of local){
    const k=(p.name||'')+'|'+p.created;
    if(keys.has(k)||!p.dataUrl)continue;
@@ -30,13 +39,9 @@ async function cloudSync(local){
    if(ins.error){failed++;console.warn('Foto não sincronizada:',p.name,ins.error);continue}
    keys.add(k);
   }
-  const again=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');
-  if(again.error)throw again.error;
+  const again=await fetchCloudPhotos();
   const localByKey=new Map(local.map(p=>[(p.name||'')+'|'+p.created,p])),merged=[];
-  for(const p of (again.data||[])){
-   const k=(p.name||'')+'|'+p.created,l=localByKey.get(k);
-   merged.push(l?{...l,cloudId:p.id,dataUrl:l.dataUrl||p.data_url}:{cloudId:p.id,cloudOnly:true,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created});
-  }
+  for(const p of again){const k=(p.name||'')+'|'+p.created,l=localByKey.get(k);merged.push(l?{...l,cloudId:p.id,dataUrl:l.dataUrl||p.data_url}:{cloudId:p.id,cloudOnly:true,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created})}
   for(const p of local)if(!merged.some(x=>(x.name||'')+'|'+x.created===(p.name||'')+'|'+p.created))merged.push(p);
   return {photos:merged.sort((a,b)=>(a.created||0)-(b.created||0)),ok:failed===0,failed};
  }catch(e){console.warn('Sincronização da galeria:',e);return {photos:local,ok:false,failed:0,error:e}}
