@@ -26,4 +26,4 @@ async function syncCloud(photos){if(!(await getCloud()))return photos;try{const 
 function setStatus(t){ensureUI();$('photoGalleryStatus').textContent=t}
 ensureUI();
 
-})();
+document.addEventListener('click',function(e){const b=e.target.closest&&e.target.closest('.photo-gallery-trigger');if(!b)return;const raw=b.getAttribute('onclick')||'';const m=raw.match(/openPhotoGallery\(\s*['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\s*,\s*['"]([\s\S]*?)['"]\s*\)/);if(!m)return;e.preventDefault();e.stopPropagation();open(m[1],m[2],m[3].replace(/&#039;/g,"'"))},true);})();
