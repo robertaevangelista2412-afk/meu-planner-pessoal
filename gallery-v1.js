@@ -16,17 +16,31 @@ async function normalizeExisting(photos){for(const p of photos){if(!p.dataUrl)co
 
 async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){console.warn('Galeria nuvem:',e);return false}}
 
-async function cloudSync(local){if(!(await getCloud()))return {photos:local,ok:false};try{
- const {data,error}=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');if(error)throw error;
- const cloud=data||[],keys=new Set(cloud.map(p=>(p.name||'')+'|'+p.created));
- for(const p of local){const k=(p.name||'')+'|'+p.created;if(!keys.has(k)&&p.dataUrl){const ins=await cloudClient.from('planner_photo_gallery').insert({user_id:cloudUser.id,album:currentKey,name:p.name||'Foto',data_url:p.dataUrl,created:p.created,updated_at:new Date().toISOString()});if(ins.error)throw ins.error;keys.add(k)}}
- const again=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');if(again.error)throw again.error;
- const localByKey=new Map(local.map(p=>[(p.name||'')+'|'+p.created,p])),merged=[];
- for(const p of (again.data||[])){const k=(p.name||'')+'|'+p.created,l=localByKey.get(k);merged.push(l?{...l,cloudId:p.id,dataUrl:p.data_url||l.dataUrl}:{cloudId:p.id,cloudOnly:true,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created})}
- for(const p of local)if(!merged.some(x=>(x.name||'')+'|'+x.created===(p.name||'')+'|'+p.created))merged.push(p);
- return {photos:merged.sort((a,b)=>(a.created||0)-(b.created||0)),ok:true}
-}catch(e){console.warn('Sincronização da galeria:',e);return {photos:local,ok:false,error:e}}}
-
+async function cloudSync(local){
+ if(!(await getCloud()))return {photos:local,ok:false,failed:0};
+ try{
+  const first=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');
+  if(first.error)throw first.error;
+  const cloud=first.data||[], keys=new Set(cloud.map(p=>(p.name||'')+'|'+p.created));
+  let failed=0;
+  for(const p of local){
+   const k=(p.name||'')+'|'+p.created;
+   if(keys.has(k)||!p.dataUrl)continue;
+   const ins=await cloudClient.from('planner_photo_gallery').insert({user_id:cloudUser.id,album:currentKey,name:p.name||'Foto',data_url:p.dataUrl,created:p.created,updated_at:new Date().toISOString()});
+   if(ins.error){failed++;console.warn('Foto não sincronizada:',p.name,ins.error);continue}
+   keys.add(k);
+  }
+  const again=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');
+  if(again.error)throw again.error;
+  const localByKey=new Map(local.map(p=>[(p.name||'')+'|'+p.created,p])),merged=[];
+  for(const p of (again.data||[])){
+   const k=(p.name||'')+'|'+p.created,l=localByKey.get(k);
+   merged.push(l?{...l,cloudId:p.id,dataUrl:l.dataUrl||p.data_url}:{cloudId:p.id,cloudOnly:true,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created});
+  }
+  for(const p of local)if(!merged.some(x=>(x.name||'')+'|'+x.created===(p.name||'')+'|'+p.created))merged.push(p);
+  return {photos:merged.sort((a,b)=>(a.created||0)-(b.created||0)),ok:failed===0,failed};
+ }catch(e){console.warn('Sincronização da galeria:',e);return {photos:local,ok:false,failed:0,error:e}}
+}
 function ensureUI(){if($('photoGalleryModal'))return;const wrap=document.createElement('div');wrap.innerHTML='<div id="photoGalleryModal" class="photo-gallery-modal hidden"><div class="photo-gallery-card"><div class="photo-gallery-head"><h2 id="photoGalleryTitle">📸 Fotos</h2><button type="button" class="photo-gallery-close" id="photoGalleryClose">×</button></div><label class="photo-gallery-add">📸 Adicionar fotos<input id="photoGalleryInput" class="photo-gallery-input" type="file" accept="image/*,.heic,.heif" multiple></label><div id="photoGalleryStatus" class="photo-gallery-status"></div><div id="photoGalleryGrid" class="photo-gallery-grid"></div></div></div><div id="photoGalleryLightbox" class="photo-gallery-lightbox hidden"><button type="button" id="photoGalleryLightboxClose">×</button><img id="photoGalleryLightboxImg" alt="Foto ampliada"></div>';document.body.appendChild(wrap.firstElementChild);document.body.appendChild(wrap.lastElementChild);
  $('photoGalleryClose').onclick=close;$('photoGalleryModal').onclick=e=>{if(e.target.id==='photoGalleryModal')close()};$('photoGalleryLightboxClose').onclick=()=>{$('photoGalleryLightbox').classList.add('hidden')};$('photoGalleryLightbox').onclick=e=>{if(e.target.id==='photoGalleryLightbox')e.currentTarget.classList.add('hidden')};
  $('photoGalleryInput').onchange=async e=>{const files=[...e.target.files||[]];if(!files.length)return;setStatus('Salvando e sincronizando… 💗');let saved=0;try{for(const file of files){const dataUrl=await prepareImage(file);await addLocal({album:currentKey,name:file.name||'Foto',dataUrl,created:Date.now()+saved});saved++}await render();setStatus(saved+' foto(s) salva(s)! 💗')}catch(err){console.error(err);setStatus('Não foi possível salvar: '+(err.message||'erro'))}e.target.value=''};
