@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const DB='planner-photo-gallery-v1-fixed',STORE='photos';
-let currentKey='';
+let currentKey='',cloudClient=null,cloudUser=null;
 const $=id=>document.getElementById(id);
 function ensureUI(){
  if($('photoGalleryModal')) return;
@@ -20,23 +20,10 @@ async function prepareImage(file){const n=(file.name||'').toLowerCase();if(file.
 async function saveFile(file,i){const dataUrl=await prepareImage(file);const db=await openDB();await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).add({album:currentKey,name:file.name||'Foto',dataUrl,created:Date.now()+i});q.onsuccess=resolve;q.onerror=()=>reject(q.error)})}
 async function getPhotos(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();q.onsuccess=()=>resolve((q.result||[]).filter(x=>x.album===currentKey).sort((a,b)=>(a.created||0)-(b.created||0)));q.onerror=()=>reject(q.error)})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-async function render(){ensureUI();const grid=$('photoGalleryGrid');grid.innerHTML='<div class="photo-gallery-empty">Carregando… 💗</div>';try{const photos=await getPhotos();if(!photos.length){grid.innerHTML='<div class="photo-gallery-empty">Ainda não há fotos nesta viagem/passeio. 💗</div>';return}grid.innerHTML=photos.map(p=>'<article class="photo-gallery-item"><img src="'+p.dataUrl+'" alt="'+esc(p.name||'Foto')+'"><div class="photo-gallery-caption">'+esc(p.name||'Foto')+'</div><div class="photo-gallery-actions"><button type="button" class="photo-gallery-delete" data-photo-delete="'+p.id+'">🗑 Excluir foto</button></div></article>').join('');grid.querySelectorAll('img').forEach(img=>img.onclick=()=>{$('photoGalleryLightboxImg').src=img.src;$('photoGalleryLightbox').classList.remove('hidden')});grid.querySelectorAll('[data-photo-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Deseja excluir esta foto?'))return;const db=await openDB();await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).delete(Number(b.dataset.photoDelete));q.onsuccess=resolve;q.onerror=()=>reject(q.error)});await render()})}catch(e){console.error(e);grid.innerHTML='<div class="photo-gallery-empty">Não foi possível carregar as fotos.</div>'}}
+async function render(){ensureUI();const grid=$('photoGalleryGrid');grid.innerHTML='<div class="photo-gallery-empty">Carregando… 💗</div>';try{let photos=await getPhotos();photos=await syncCloud(photos);if(!photos.length){grid.innerHTML='<div class="photo-gallery-empty">Ainda não há fotos nesta viagem/passeio. 💗</div>';return}grid.innerHTML=photos.map(p=>'<article class="photo-gallery-item"><img src="'+p.dataUrl+'" alt="'+esc(p.name||'Foto')+'"><div class="photo-gallery-caption">'+esc(p.name||'Foto')+'</div><div class="photo-gallery-actions"><button type="button" class="photo-gallery-delete" data-photo-delete="'+p.id+'">🗑 Excluir foto</button></div></article>').join('');grid.querySelectorAll('img').forEach(img=>img.onclick=()=>{$('photoGalleryLightboxImg').src=img.src;$('photoGalleryLightbox').classList.remove('hidden')});grid.querySelectorAll('[data-photo-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Deseja excluir esta foto?'))return;const db=await openDB();await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).delete(Number(b.dataset.photoDelete));q.onsuccess=resolve;q.onerror=()=>reject(q.error)});await render()})}catch(e){console.error(e);grid.innerHTML='<div class="photo-gallery-empty">Não foi possível carregar as fotos.</div>'}}
+async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqTg');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){return false}}
+async function syncCloud(photos){if(!(await getCloud()))return photos;try{const r=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');if(r.error)throw r.error;const cloud=r.data||[];const keys=new Set(photos.map(p=>(p.name||'')+'|'+p.created));for(const p of photos){if(!p.dataUrl)continue;const k=(p.name||'')+'|'+p.created;if(!cloud.some(x=>(x.name||'')+'|'+x.created===k)){await cloudClient.from('planner_photo_gallery').insert({user_id:cloudUser.id,album:currentKey,name:p.name||'Foto',data_url:p.dataUrl,created:p.created,updated_at:new Date().toISOString()})}}for(const p of cloud){const k=(p.name||'')+'|'+p.created;if(!keys.has(k)&&p.data_url){photos.push({id:'cloud-'+p.id,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created,cloudOnly:true})}}return photos.sort((a,b)=>(a.created||0)-(b.created||0))}catch(e){console.warn('Sincronização da galeria:',e);return photos}}
 function setStatus(t){ensureUI();$('photoGalleryStatus').textContent=t}
 ensureUI();
-document.addEventListener('click',function(e){
-  const b=e.target.closest('.photo-gallery-trigger');
-  if(!b)return;
-  e.preventDefault();
-  e.stopImmediatePropagation();
-  const card=b.closest('.content-card');
-  const list=b.closest('#tripList,#outingList');
-  const type=list?.id==='tripList'?'trip':list?.id==='outingList'?'outing':'';
-  const edit=card?.querySelector('button[onclick*="editItem"]');
-  const raw=edit?.getAttribute('onclick')||'';
-  const m=raw.match(/editItem\(\s*['"](?:trip|outing)['"]\s*,\s*['"]([^'"]+)['"]\s*\)/);
-  if(!type||!m)return;
-  const h=card?.querySelector('h3')?.textContent||'Fotos';
-  const title=h.replace(type==='trip'?'✈️':'🎡','').trim();
-  open(type,m[1],title);
-},true);
+
 })();
