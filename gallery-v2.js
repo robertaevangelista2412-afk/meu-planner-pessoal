@@ -1,29 +1,96 @@
-(()=>{
+(function(){
 'use strict';
-const DB='planner-photo-gallery-v1-fixed',STORE='photos';
-let currentKey='',cloudClient=null,cloudUser=null;
-const $=id=>document.getElementById(id);
+var DB='planner-photo-gallery-v1-fixed';
+var STORE='photos';
+var currentKey='';
+function byId(id){return document.getElementById(id);}
 function ensureUI(){
- if($('photoGalleryModal')) return;
- const wrap=document.createElement('div');
- wrap.innerHTML='<div id="photoGalleryModal" class="photo-gallery-modal hidden"><div class="photo-gallery-card"><div class="photo-gallery-head"><h2 id="photoGalleryTitle">📸 Fotos</h2><button type="button" class="photo-gallery-close" id="photoGalleryClose">×</button></div><label class="photo-gallery-add">📸 Adicionar fotos<input id="photoGalleryInput" class="photo-gallery-input" type="file" accept="image/*,.heic,.heif" multiple></label><div id="photoGalleryStatus" class="photo-gallery-status"></div><div id="photoGalleryGrid" class="photo-gallery-grid"></div></div></div><div id="photoGalleryLightbox" class="photo-gallery-lightbox hidden"><button type="button" id="photoGalleryLightboxClose">×</button><img id="photoGalleryLightboxImg" alt="Foto ampliada"></div>';
- document.body.appendChild(wrap.firstElementChild);document.body.appendChild(wrap.lastElementChild);
- $('photoGalleryClose').onclick=close;$('photoGalleryModal').onclick=e=>{if(e.target.id==='photoGalleryModal')close()};$('photoGalleryLightboxClose').onclick=()=>{$('photoGalleryLightbox').classList.add('hidden')};
- $('photoGalleryInput').onchange=async e=>{const files=[...e.target.files||[]];if(!files.length)return;setStatus('Salvando fotos… 💗');try{for(let i=0;i<files.length;i++)await saveFile(files[i],i);setStatus(files.length+' foto(s) salva(s)! 💗');await render()}catch(err){console.error(err);setStatus('Não foi possível salvar: '+(err.message||'erro'))}e.target.value=''};
+  if(byId('photoGalleryModal')) return;
+  var d=document.createElement('div');
+  d.innerHTML='<div id="photoGalleryModal" class="photo-gallery-modal hidden"><div class="photo-gallery-card"><div class="photo-gallery-head"><h2 id="photoGalleryTitle">📸 Fotos</h2><button type="button" class="photo-gallery-close" id="photoGalleryClose">×</button></div><label class="photo-gallery-add">📸 Adicionar fotos<input id="photoGalleryInput" class="photo-gallery-input" type="file" accept="image/*" multiple></label><div id="photoGalleryStatus" class="photo-gallery-status"></div><div id="photoGalleryGrid" class="photo-gallery-grid"></div></div></div><div id="photoGalleryLightbox" class="photo-gallery-lightbox hidden"><button type="button" id="photoGalleryLightboxClose">×</button><img id="photoGalleryLightboxImg" alt="Foto ampliada"></div>';
+  document.body.appendChild(d.firstElementChild);
+  document.body.appendChild(d.lastElementChild);
+  byId('photoGalleryClose').onclick=closeGallery;
+  byId('photoGalleryModal').onclick=function(e){if(e.target===byId('photoGalleryModal'))closeGallery();};
+  byId('photoGalleryLightboxClose').onclick=function(){byId('photoGalleryLightbox').classList.add('hidden');};
+  byId('photoGalleryInput').onchange=function(e){saveFiles(e.target.files);e.target.value='';};
 }
-function open(type,id,title){ensureUI();currentKey=type+':'+id;$('photoGalleryTitle').textContent='📸 Fotos — '+(title||'');$('photoGalleryModal').classList.remove('hidden');render();}
-window.openPhotoGallery=open;
-function close(){if($('photoGalleryModal'))$('photoGalleryModal').classList.add('hidden');}
-function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
-function fileData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file)})}\nfunction loadHeic(){if(window.heic2any)return window.heic2any;return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';s.onload=()=>resolve(window.heic2any);s.onerror=()=>reject(new Error('Não foi possível preparar a foto HEIC/HEIF.'));document.head.appendChild(s)})}
-async function prepareImage(file){const n=(file.name||'').toLowerCase();if(file.type==='image/heic'||file.type==='image/heif'||/\.(heic|heif)$/.test(n)){const convert=await loadHeic();const converted=await convert({blob:file,toType:'image/jpeg',quality:.8});file=Array.isArray(converted)?converted[0]:converted}const raw=await fileData(file);return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const max=1600,s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*s));canvas.height=Math.max(1,Math.round(img.naturalHeight*s));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.8))};img.onerror=()=>reject(new Error('Não foi possível ler esta imagem.'));img.src=raw})}
-async function saveFile(file,i){const dataUrl=await prepareImage(file);const db=await openDB();await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).add({album:currentKey,name:file.name||'Foto',dataUrl,created:Date.now()+i});q.onsuccess=resolve;q.onerror=()=>reject(q.error)})}
-async function getPhotos(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();q.onsuccess=()=>resolve((q.result||[]).filter(x=>x.album===currentKey).sort((a,b)=>(a.created||0)-(b.created||0)));q.onerror=()=>reject(q.error)})}
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-async function render(){ensureUI();const grid=$('photoGalleryGrid');grid.innerHTML='<div class="photo-gallery-empty">Carregando… 💗</div>';try{let photos=await getPhotos();photos=await syncCloud(photos);if(!photos.length){grid.innerHTML='<div class="photo-gallery-empty">Ainda não há fotos nesta viagem/passeio. 💗</div>';return}grid.innerHTML=photos.map(p=>'<article class="photo-gallery-item"><img src="'+p.dataUrl+'" alt="'+esc(p.name||'Foto')+'"><div class="photo-gallery-caption">'+esc(p.name||'Foto')+'</div><div class="photo-gallery-actions"><button type="button" class="photo-gallery-delete" data-photo-delete="'+p.id+'">🗑 Excluir foto</button></div></article>').join('');grid.querySelectorAll('img').forEach(img=>img.onclick=()=>{$('photoGalleryLightboxImg').src=img.src;$('photoGalleryLightbox').classList.remove('hidden')});grid.querySelectorAll('[data-photo-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Deseja excluir esta foto?'))return;const db=await openDB();await new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).delete(Number(b.dataset.photoDelete));q.onsuccess=resolve;q.onerror=()=>reject(q.error)});await render()})}catch(e){console.error(e);grid.innerHTML='<div class="photo-gallery-empty">Não foi possível carregar as fotos.</div>'}}
-async function getCloud(){if(!window.supabase?.createClient)return false;try{if(!cloudClient)cloudClient=window.supabase.createClient('https://agcqgwlusfzvvjuxunli.supabase.co','sb_publishable_BEoptb7_L-2pqS_SQ16EqG_TNzy-xeK');const s=await cloudClient.auth.getSession();cloudUser=s.data?.session?.user||null;return!!cloudUser}catch(e){return false}}
-async function syncCloud(photos){if(!(await getCloud()))return photos;try{const r=await cloudClient.from('planner_photo_gallery').select('id,album,name,data_url,created').eq('user_id',cloudUser.id).eq('album',currentKey).order('created');if(r.error)throw r.error;const cloud=r.data||[];const keys=new Set(photos.map(p=>(p.name||'')+'|'+p.created));for(const p of photos){if(!p.dataUrl)continue;const k=(p.name||'')+'|'+p.created;if(!cloud.some(x=>(x.name||'')+'|'+x.created===k)){await cloudClient.from('planner_photo_gallery').insert({user_id:cloudUser.id,album:currentKey,name:p.name||'Foto',data_url:p.dataUrl,created:p.created,updated_at:new Date().toISOString()})}}for(const p of cloud){const k=(p.name||'')+'|'+p.created;if(!keys.has(k)&&p.data_url){photos.push({id:'cloud-'+p.id,album:p.album,name:p.name,dataUrl:p.data_url,created:p.created,cloudOnly:true})}}return photos.sort((a,b)=>(a.created||0)-(b.created||0))}catch(e){console.warn('Sincronização da galeria:',e);return photos}}
-function setStatus(t){ensureUI();$('photoGalleryStatus').textContent=t}
+function openGallery(type,id,title){
+  ensureUI();
+  currentKey=String(type)+':'+String(id);
+  byId('photoGalleryTitle').textContent='📸 Fotos — '+(title||'');
+  byId('photoGalleryModal').classList.remove('hidden');
+  renderPhotos();
+}
+window.openPhotoGallery=openGallery;
+function closeGallery(){var m=byId('photoGalleryModal');if(m)m.classList.add('hidden');}
+function openDB(){
+  return new Promise(function(resolve,reject){
+    var r=indexedDB.open(DB,1);
+    r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});};
+    r.onsuccess=function(){resolve(r.result);};
+    r.onerror=function(){reject(r.error);};
+  });
+}
+function readFile(file){
+  return new Promise(function(resolve,reject){
+    var r=new FileReader();
+    r.onload=function(){resolve(r.result);};
+    r.onerror=function(){reject(r.error);};
+    r.readAsDataURL(file);
+  });
+}
+function addPhoto(row){
+  return openDB().then(function(db){return new Promise(function(resolve,reject){
+    var q=db.transaction(STORE,'readwrite').objectStore(STORE).add(row);
+    q.onsuccess=resolve;q.onerror=function(){reject(q.error);};
+  });});
+}
+function getPhotos(){
+  return openDB().then(function(db){return new Promise(function(resolve,reject){
+    var q=db.transaction(STORE,'readonly').objectStore(STORE).getAll();
+    q.onsuccess=function(){resolve((q.result||[]).filter(function(x){return x.album===currentKey;}).sort(function(a,b){return (a.created||0)-(b.created||0);});};
+    q.onerror=function(){reject(q.error);};
+  });});
+}
+function setStatus(t){ensureUI();byId('photoGalleryStatus').textContent=t;}
+function saveFiles(files){
+  var list=Array.prototype.slice.call(files||[]);
+  if(!list.length)return;
+  setStatus('Salvando '+list.length+' foto(s)… 💗');
+  var chain=Promise.resolve();
+  list.forEach(function(file,index){
+    chain=chain.then(function(){return readFile(file).then(function(dataUrl){return addPhoto({album:currentKey,name:file.name||'Foto',dataUrl:dataUrl,created:Date.now()+index});});});
+  });
+  chain.then(function(){setStatus(list.length+' foto(s) salva(s)! 💗');return renderPhotos();}).catch(function(e){console.error(e);setStatus('Não foi possível salvar: '+(e&&e.message?e.message:'erro'));});
+}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m];});}
+function renderPhotos(){
+  ensureUI();
+  var grid=byId('photoGalleryGrid');
+  grid.innerHTML='<div class="photo-gallery-empty">Carregando… 💗</div>';
+  return getPhotos().then(function(photos){
+    if(!photos.length){grid.innerHTML='<div class="photo-gallery-empty">Ainda não há fotos nesta viagem/passeio. 💗</div>';return;}
+    grid.innerHTML=photos.map(function(p){return '<article class="photo-gallery-item"><img src="'+p.dataUrl+'" alt="'+esc(p.name||'Foto')+'"><div class="photo-gallery-caption">'+esc(p.name||'Foto')+'</div><div class="photo-gallery-actions"><button type="button" class="photo-gallery-delete" data-photo-delete="'+p.id+'">🗑 Excluir foto</button></div></article>';}).join('');
+    Array.prototype.forEach.call(grid.querySelectorAll('img'),function(img){img.onclick=function(){byId('photoGalleryLightboxImg').src=img.src;byId('photoGalleryLightbox').classList.remove('hidden');};});
+    Array.prototype.forEach.call(grid.querySelectorAll('[data-photo-delete]'),function(btn){btn.onclick=function(){if(!confirm('Deseja excluir esta foto?'))return;openDB().then(function(db){return new Promise(function(resolve,reject){var q=db.transaction(STORE,'readwrite').objectStore(STORE).delete(Number(btn.getAttribute('data-photo-delete')));q.onsuccess=resolve;q.onerror=function(){reject(q.error);};});}).then(renderPhotos);};});
+  }).catch(function(e){console.error(e);grid.innerHTML='<div class="photo-gallery-empty">Não foi possível carregar as fotos.</div>';});
+}
 ensureUI();
-
-document.addEventListener('click',function(e){const b=e.target.closest&&e.target.closest('.photo-gallery-trigger');if(!b)return;const raw=b.getAttribute('onclick')||'';const m=raw.match(/openPhotoGallery\(\s*['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\s*,\s*['"]([\s\S]*?)['"]\s*\)/);if(!m)return;e.preventDefault();e.stopPropagation();open(m[1],m[2],m[3].replace(/&#039;/g,"'"))},true);})();
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.photo-gallery-trigger'):null;
+  if(!b)return;
+  var card=b.closest('.content-card');
+  var edit=card?card.querySelector('button[onclick*="editItem"]'):null;
+  var raw=edit?edit.getAttribute('onclick'):'';
+  var m=raw.match(/editItem\\(\\s*['"](?:trip|outing)['"]\\s*,\\s*['"]([^'"]+)['"]/);
+  var list=b.closest('#tripList,#outingList');
+  var type=list&&list.id==='tripList'?'trip':list&&list.id==='outingList'?'outing':'';
+  if(!type||!m)return;
+  e.preventDefault();
+  e.stopPropagation();
+  var h=card&&card.querySelector('h3')?card.querySelector('h3').textContent:'Fotos';
+  var title=h.replace(type==='trip'?'✈️':'🎡','').trim();
+  openGallery(type,m[1],title);
+},true);
+})();
