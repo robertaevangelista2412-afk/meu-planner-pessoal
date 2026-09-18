@@ -32,7 +32,7 @@ document.addEventListener('click',function(e){
   const type=list?.id==='tripList'?'trip':list?.id==='outingList'?'outing':'';
   const edit=card?.querySelector('button[onclick*="editItem"]');
   const raw=edit?.getAttribute('onclick')||'';
-  const m=raw.match(/editItem\\(\\s*['"](?:trip|outing)['"]\\s*,\\s*['"]([^'"]+)['"]\\s*\\)/);
+  const m=raw.match(/editItem\(\s*['"](?:trip|outing)['"]\s*,\s*['"]([^'"]+)['"]\s*\)/);
   if(!type||!m)return;
   const h=card?.querySelector('h3')?.textContent||'Fotos';
   const title=h.replace(type==='trip'?'✈️':'🎡','').trim();
